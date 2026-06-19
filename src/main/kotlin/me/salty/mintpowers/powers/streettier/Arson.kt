@@ -20,7 +20,7 @@ class Arson(plugin: MintPowers) : AbstractPower(plugin) {
         return PowerLogic(
 
             onPlayerAttack = { event ->
-                val player = event.original.damager as? LivingEntity ?: return@PowerLogic
+                val player = event.original.entity as? LivingEntity ?: return@PowerLogic
 
                 player.fireTicks = 100
             },

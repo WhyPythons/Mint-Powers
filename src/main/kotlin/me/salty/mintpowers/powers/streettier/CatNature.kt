@@ -100,7 +100,7 @@ class CatNature(plugin: MintPowers) : AbstractPower(plugin) {
 
                 val superJumpCooldown = metadata.getPlayerData(player.uniqueId, "super_jump", Cooldown(false, 0, 240))
 
-                if (player.isSneaking) {
+                if (player.isSneaking && !superJumpCooldown.isOn) {
                     superJumpCooldown.start(player, metadata, plugin,Pair("Super jump has left cooldown.", NamedTextColor.GOLD))
                     player.velocity = Vector(0.0, 1.0, 0.0)
                 }
