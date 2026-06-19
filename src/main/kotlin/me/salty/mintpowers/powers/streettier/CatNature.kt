@@ -4,6 +4,8 @@ import me.salty.mintpowers.MintPowers
 import me.salty.mintpowers.powers.AbstractPower
 import me.salty.mintpowers.powers.Cooldown
 import me.salty.mintpowers.powers.PowerLogic
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
@@ -11,7 +13,6 @@ import org.bukkit.damage.DamageType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Vector
-import kotlin.math.sin
 
 class CatNature(plugin: MintPowers) : AbstractPower(plugin) {
 
@@ -88,6 +89,16 @@ class CatNature(plugin: MintPowers) : AbstractPower(plugin) {
                     superSpeedCooldown.start(player, metadata, plugin, Pair("Super speed has left cooldown.", NamedTextColor.GOLD))
                     event.original.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 200, 2))
                     event.original.isCancelled = true
+                }
+
+                if (abilitySlot == 1) {
+                    val meowSound = Sound.sound(
+                        Key.key("minecraft", "entity.cat.ambient"),
+                        Sound.Source.AMBIENT,
+                        1.0f,
+                        1.0f
+                    )
+                    player.playSound(meowSound)
                 }
 
             },
