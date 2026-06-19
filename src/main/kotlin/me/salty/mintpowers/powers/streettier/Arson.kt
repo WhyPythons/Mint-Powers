@@ -19,16 +19,25 @@ class Arson(plugin: MintPowers) : AbstractPower(plugin) {
     override fun provideLogic(): PowerLogic {
         return PowerLogic(
 
-            onPlayerAttack = {event ->
+            onPlayerAttack = { event ->
                 val player = event.original.damager as? LivingEntity ?: return@PowerLogic
 
                 player.fireTicks = 100
             },
 
-            onPlayerHit = {event ->
+            onPlayerHit = { event ->
                 val attacker = event.original.damager as? LivingEntity ?: return@PowerLogic
 
                 attacker.fireTicks = 80
+            },
+
+            onPlayerDamageBlock = { event ->
+                val blockAbove = event.original.block.getRelative(BlockFace.UP)
+
+                if (blockAbove.type != Material.AIR) {
+                    blockAbove.type = Material.FIRE
+                }
+
             },
 
             onPlayerMove = { event ->
