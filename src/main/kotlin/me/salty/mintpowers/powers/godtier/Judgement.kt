@@ -1,6 +1,5 @@
 package me.salty.mintpowers.powers.godtier
 
-import me.salty.mintpowers.powers.KarmaTeam
 import me.salty.mintpowers.MintPowers
 import me.salty.mintpowers.powers.PowerLogic
 import me.salty.mintpowers.powers.AbstractPower
