@@ -14,21 +14,30 @@ class Arson(plugin: MintPowers) : AbstractPower(plugin) {
 
     override val id: String = "arson"
     override val name: String = "Arson"
-    override val description: String = "Placeholder desc"
+    override val description: String = "Flames engulf you, and the infants you worship."
 
     override fun provideLogic(): PowerLogic {
         return PowerLogic(
 
-            onPlayerAttack = {event ->
-                val player = event.original.damager as? LivingEntity ?: return@PowerLogic
+            onPlayerAttack = { event ->
+                val player = event.original.entity as? LivingEntity ?: return@PowerLogic
 
                 player.fireTicks = 100
             },
 
-            onPlayerHit = {event ->
+            onPlayerHit = { event ->
                 val attacker = event.original.damager as? LivingEntity ?: return@PowerLogic
 
                 attacker.fireTicks = 80
+            },
+
+            onPlayerDamageBlock = { event ->
+                val blockAbove = event.original.block.getRelative(BlockFace.UP)
+
+                if (blockAbove.type == Material.AIR) {
+                    blockAbove.type = Material.FIRE
+                }
+
             },
 
             onPlayerMove = { event ->

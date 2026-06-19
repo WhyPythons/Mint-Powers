@@ -12,9 +12,12 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
 import kotlinx.serialization.Serializable
+import me.salty.mintpowers.MintPowers
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.block.Block
 import org.bukkit.entity.Player
+import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import java.util.UUID
@@ -86,7 +89,7 @@ data class PowerMetadata (
     var toggles: HashMap<String, Boolean> = hashMapOf(),
     var counters: HashMap<String, Int> = hashMapOf(),
 ) {
-
+    
     inline fun <reified T> setPlayerData(playerUUID: UUID, key: String, value: T) {
         val scopedKey = "$playerUUID:$key"
 
@@ -117,7 +120,21 @@ data class Cooldown (
     var isOn: Boolean,
     val currentTicks: Long,
     val totalTicks: Long
-)
+) {
+
+    fun start(player: Player, metadata: PowerMetadata, plugin: MintPowers, cooldownMessage: Pair<String, NamedTextColor>) {
+
+        if (this.isOn) return
+
+        this.isOn = true
+
+        player.scheduler.runDelayed(plugin, {
+            this.isOn = false
+            player.sendActionBar(Component.text(cooldownMessage.first, cooldownMessage.second))
+        }, null, this.totalTicks)
+
+    }
+}
 
 data class PowerEvent<T : Event> (
     val original: T,
@@ -139,6 +156,7 @@ data class PowerLogic (
     val onPlayerSwapHands: ((PowerEvent<PlayerSwapHandItemsEvent>) -> Unit)? = null,
     val onPlayerAnimation : ((PowerEvent<PlayerAnimationEvent>) -> Unit)? = null,
     val onPlayerHeldItem : ((PowerEvent<PlayerItemHeldEvent>) -> Unit)? = null,
+    val onPlayerDamageBlock : ((PowerEvent<BlockDamageEvent>) -> Unit)? = null,
 )
 
 
