@@ -1,38 +1,22 @@
 package me.salty.mintpowers
 
-import io.papermc.paper.ban.BanListType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import me.salty.mintpowers.powers.KarmaTeam
-import me.salty.mintpowers.powers.PlayerInfo
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
-import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.event.entity.EntityPickupItemEvent
-import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.event.player.PlayerRespawnEvent
-import org.bukkit.inventory.ItemRarity
-import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
-import java.time.Duration
 import java.util.*
 
 class PlayerManager(private val plugin: MintPowers) : Listener {
 
     private val playerInfoList = HashMap<UUID, PlayerInfo>()
+    private val playerGroups = HashMap<String, Group>()
 
     private val jsonEngine = Json {
         ignoreUnknownKeys = true
@@ -79,6 +63,14 @@ class PlayerManager(private val plugin: MintPowers) : Listener {
 
     fun hasPower(playerUUID: UUID, powerId: String): Boolean {
         return playerInfoList[playerUUID]?.powers?.contains(powerId) == true
+    }
+
+    fun createGroup(groupId: String, groupInfo: Group) {
+        playerGroups[groupId] = groupInfo
+    }
+
+    fun disbandGroup(groupId: String) {
+        playerGroups.remove(groupId)
     }
 
     fun loadPlayerData(player: Player) {

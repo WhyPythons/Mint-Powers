@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.inventory.ItemRarity
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
@@ -44,6 +45,19 @@ class KarmaManager(private val plugin: MintPowers): Listener {
         val ownerKey = event.itemInHand.persistentDataContainer.get(itemOwnerKey, PersistentDataType.STRING) ?: return
 
         ownedBlocks[event.block.location] = UUID.fromString(ownerKey)
+    }
+
+    @EventHandler
+    fun onPlayerDropItem(event: PlayerDropItemEvent) {
+        if (event.player.isSneaking) {
+            event.itemDrop.itemStack.editMeta { meta ->
+                meta.persistentDataContainer.set(itemOwnerKey, PersistentDataType.STRING, UUID.randomUUID().toString())
+
+                val itemLore = listOf(Component.text("", NamedTextColor.GOLD))
+
+                meta.lore(itemLore)
+            }
+        }
     }
 
     @EventHandler

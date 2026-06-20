@@ -13,6 +13,7 @@ class CursedImmortality(plugin: MintPowers) : AbstractPower(plugin) {
 
     override fun provideLogic(): PowerLogic {
         return PowerLogic(
+
             onDamageTaken = {event ->
                 val damageType = event.original.damageSource.damageType
 

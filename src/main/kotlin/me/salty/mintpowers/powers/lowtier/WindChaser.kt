@@ -5,7 +5,6 @@ import me.salty.mintpowers.MintPowers
 import me.salty.mintpowers.powers.PowerLogic
 import me.salty.mintpowers.powers.AbstractPower
 import me.salty.mintpowers.powers.Cooldown
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Particle
 import org.bukkit.entity.WindCharge
@@ -18,6 +17,7 @@ class WindChaser(plugin: MintPowers) : AbstractPower(plugin) {
     override val id: String = "wind_chaser"
     override val name: String = "Wind Chaser"
     override val description: String = "Chaser of the wind.."
+
 
     override fun provideLogic(): PowerLogic {
 
@@ -57,7 +57,6 @@ class WindChaser(plugin: MintPowers) : AbstractPower(plugin) {
 
             onPlayerSwapHands = { event ->
 
-                val metadata = event.power.metadata
                 val player = event.original.player
 
                 val dashCooldown = event.power.metadata.getPlayerData(player.uniqueId, "dash_cooldown",
@@ -69,7 +68,7 @@ class WindChaser(plugin: MintPowers) : AbstractPower(plugin) {
                 val abilitySlot = player.inventory.heldItemSlot
 
                 if (abilitySlot == 0 && !dashCooldown.isOn) {
-                    dashCooldown.start(player, metadata, plugin, Pair("Dash has left cooldown", NamedTextColor.GOLD))
+                    dashCooldown.start(player, Pair("Dash has left cooldown", NamedTextColor.AQUA), plugin)
 
                     event.original.isCancelled = true
 
@@ -81,8 +80,7 @@ class WindChaser(plugin: MintPowers) : AbstractPower(plugin) {
                 }
 
                 if (abilitySlot == 1 && !windBulletCooldown.isOn) {
-
-                    dashCooldown.start(player, metadata, plugin, Pair("Wind bullet has left cooldown.", NamedTextColor.GOLD))
+                    windBulletCooldown.start(player,Pair("Wind bullet has left cooldown.", NamedTextColor.AQUA), plugin)
 
                     event.original.isCancelled = true
 
@@ -98,15 +96,6 @@ class WindChaser(plugin: MintPowers) : AbstractPower(plugin) {
                     }
 
                 }
-
-                if (abilitySlot == 0 && dashCooldown.isOn) {
-                    player.sendActionBar(Component.text("Dash is on cooldown (6 seconds).", NamedTextColor.RED))
-                }
-
-                if (abilitySlot == 1 && windBulletCooldown.isOn) {
-                    player.sendActionBar(Component.text("Wind Bullet is on cooldown (8 seconds).", NamedTextColor.RED))
-                }
-
             },
 
             onPlayerJump = { event ->

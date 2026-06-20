@@ -86,8 +86,8 @@ class CatNature(plugin: MintPowers) : AbstractPower(plugin) {
                 val abilitySlot = player.inventory.heldItemSlot
 
                 if (abilitySlot == 0 && !superSpeedCooldown.isOn) {
-                    superSpeedCooldown.start(player, metadata, plugin, Pair("Super speed has left cooldown.", NamedTextColor.GOLD))
-                    event.original.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 200, 2))
+                    superSpeedCooldown.start(player, Pair("Super Speed has left cooldown.", NamedTextColor.GOLD), plugin)
+                    event.original.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 200, 3))
                     event.original.isCancelled = true
                 }
 
@@ -98,7 +98,7 @@ class CatNature(plugin: MintPowers) : AbstractPower(plugin) {
                         1.0f,
                         1.0f
                     )
-                    player.playSound(meowSound)
+                    player.world.playSound(meowSound, player.location.x, player.location.y, player.location.z)
                 }
 
             },
@@ -112,8 +112,8 @@ class CatNature(plugin: MintPowers) : AbstractPower(plugin) {
                 val superJumpCooldown = metadata.getPlayerData(player.uniqueId, "super_jump", Cooldown(false, 0, 240))
 
                 if (player.isSneaking && !superJumpCooldown.isOn) {
-                    superJumpCooldown.start(player, metadata, plugin,Pair("Super jump has left cooldown.", NamedTextColor.GOLD))
-                    player.velocity = Vector(0.0, 1.0, 0.0)
+                    superJumpCooldown.start(player, Pair("Super Jump has left cooldown.", NamedTextColor.GOLD), plugin)
+                    player.velocity = Vector(0.0, 1.1, 0.0)
                 }
 
             },

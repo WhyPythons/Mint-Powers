@@ -11,70 +11,15 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
-import kotlinx.serialization.Serializable
 import me.salty.mintpowers.MintPowers
+import me.salty.mintpowers.PlayerInfo
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import java.util.UUID
-
-enum class KarmaTeam {
-    CIVILIAN,
-    VILLAIN,
-    HERO;
-
-    fun isEnemy(otherPlayerTeam: KarmaTeam): Boolean {
-        return if (this == HERO && otherPlayerTeam == VILLAIN) {
-            true
-        } else if (this == VILLAIN && otherPlayerTeam == HERO ) {
-            true
-        } else {
-            false
-        }
-    }
-}
-
-@Serializable
-data class PlayerInfo (
-    var lives: Int = 3,
-    var karma: Int = 0,
-    var team: KarmaTeam = KarmaTeam.CIVILIAN,
-    var isKnockedOut: Boolean = false,
-    val powers: HashSet<String> = hashSetOf()
-) {
-
-    fun changeKarma(player: Player, karma: Int) {
-        this.karma += karma
-        validateTeam(player, this.karma)
-    }
-
-    fun updateKarma(player: Player, karma: Int) {
-        this.karma = karma
-        validateTeam(player, this.karma)
-    }
-
-    fun validateTeam(player: Player, karma: Int) {
-        var messageColor = NamedTextColor.WHITE
-
-        if (karma >= 100) {
-            this.team = KarmaTeam.HERO
-            messageColor = NamedTextColor.GOLD
-        }
-        else if (karma <= -100) {
-            this.team = KarmaTeam.VILLAIN
-            messageColor = NamedTextColor.RED
-        }
-        else {
-            this.team = KarmaTeam.CIVILIAN
-        }
-
-        player.sendActionBar(Component.text("Your karma has changed. You are a $team.", messageColor))
-    }
-}
 
 data class PowerData (
     val id: String,
@@ -118,13 +63,14 @@ data class PowerMetadata (
 
 data class Cooldown (
     var isOn: Boolean,
-    val currentTicks: Long,
+    var currentTicks: Long,
     val totalTicks: Long
 ) {
 
-    fun start(player: Player, metadata: PowerMetadata, plugin: MintPowers, cooldownMessage: Pair<String, NamedTextColor>) {
-
+    fun start(player: Player, cooldownMessage: Pair<String, NamedTextColor>, plugin: MintPowers) {
         if (this.isOn) return
+
+        this.show(player, Pair("=", cooldownMessage.second), plugin)
 
         this.isOn = true
 
@@ -134,6 +80,39 @@ data class Cooldown (
         }, null, this.totalTicks)
 
     }
+
+    fun show(player: Player, barLook: Pair<String, NamedTextColor>, plugin: MintPowers) {
+        if (this.isOn) return
+
+        val cooldownBar = mutableListOf("")
+
+        for (i in 0..this.totalTicks / 20) {
+            cooldownBar.add("-")
+        }
+
+        player.scheduler.runAtFixedRate(plugin, { task ->
+            this.currentTicks += 20
+
+            for ((index, item) in cooldownBar.withIndex()) {
+                if (item == "-") {
+                    cooldownBar[index] = "="
+                    break
+                }
+
+            }
+
+            player.sendActionBar(Component.text(cooldownBar.joinToString(prefix = "[", postfix = "]", separator = ""), barLook.second))
+
+            if (this.currentTicks >= this.totalTicks) {
+                this.currentTicks = 0
+
+                task.cancel()
+            }
+
+        },null, 1, 20)
+
+    }
+
 }
 
 data class PowerEvent<T : Event> (

@@ -16,7 +16,6 @@ import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Vector
-import java.util.function.Consumer
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
@@ -40,7 +39,7 @@ class TimeStop(plugin: MintPowers) : AbstractPower(plugin) {
                 val abilitySlot = player.inventory.heldItemSlot
 
                 if (abilitySlot == 0 && !timeStopCooldown.isOn) {
-                    timeStopCooldown.start(player, metadata, plugin, Pair("Time stop has left cooldown.", NamedTextColor.GOLD))
+                    timeStopCooldown.start(player,  Pair("Time stop has left cooldown.", NamedTextColor.GOLD), plugin)
 
                     event.original.isCancelled = true
 
@@ -71,7 +70,7 @@ class TimeStop(plugin: MintPowers) : AbstractPower(plugin) {
                             }
                         }
 
-                    }, null, 0, 1L)
+                    }, null, 1, 1L)
 
                     player.scheduler.runDelayed(plugin, { task ->
                         metadata.setPlayerData(player.uniqueId, "time_stop", Cooldown(true, 0, 3600))
@@ -90,7 +89,7 @@ class TimeStop(plugin: MintPowers) : AbstractPower(plugin) {
 
     fun stopEntities(player: Player): HashMap<Entity, Pair<Vector, Vector>> {
 
-        val entities = player.getNearbyEntities(20.0, 20.0, 20.0);
+        val entities = player.getNearbyEntities(20.0, 20.0, 20.0)
 
         val map = hashMapOf<Entity, Pair<Vector, Vector>>()
 
@@ -135,7 +134,7 @@ class TimeStop(plugin: MintPowers) : AbstractPower(plugin) {
 
     fun revertEntities(player: Player, frozenEntities: HashMap<Entity, Pair<Vector, Vector>>) {
         for ((entity, vectors) in frozenEntities) {
-            val (position, velocity) = vectors
+            val (_, velocity) = vectors
 
             entity.velocity = velocity
 
@@ -159,9 +158,13 @@ class TimeStop(plugin: MintPowers) : AbstractPower(plugin) {
                 val playerDefaults = EntityType.PLAYER.defaultAttributes
 
                 for (attribute in attributesToReset) {
-                    val instance = entity.getAttribute(attribute)
-                    if (instance != null) {
-                        instance.baseValue = playerDefaults.getAttribute(attribute)?.baseValue ?: 0.0
+                    val playerAttribute = entity.getAttribute(attribute) ?: continue
+                    val defaultAttribute = playerDefaults.getAttribute(attribute)
+
+                    if (defaultAttribute != null) {
+                        playerAttribute.baseValue = defaultAttribute.baseValue
+                    } else {
+                        playerAttribute.baseValue = attribute.defaultValue
                     }
                 }
             }

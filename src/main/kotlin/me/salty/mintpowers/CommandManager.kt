@@ -21,14 +21,20 @@ class CommandManager(private val plugin: MintPowers) {
         val hasArgument = Commands.argument("target", ArgumentTypes.player()).then(createPowerArgumentNode("has"))
 
         val root = Commands.literal("power")
-            //.requires { sourceStack -> sourceStack.sender.hasPermission("mintpowers.admin") }
             .then(Commands.literal("grant")
                 .then(grantArgument))
             .then(Commands.literal("revoke")
                 .then(revokeArgument))
             .then(Commands.literal("has")
                 .then(hasArgument))
+            .requires { sourceStack -> sourceStack.sender.hasPermission("mintpowers.admin") }
 
+        return root
+    }
+
+    fun groupCommand(): LiteralArgumentBuilder<CommandSourceStack> {
+
+        val root = Commands.literal("group")
 
         return root
     }
@@ -119,6 +125,7 @@ class CommandManager(private val plugin: MintPowers) {
             .then(Commands.literal("pay")
                 .then(payArgument))
             .then(Commands.literal("set")
+                .requires { sourceStack -> sourceStack.sender.hasPermission("mintpowers.admin") }
                 .then(setArgument))
             .then(globalArgument)
             .executes { context ->
@@ -130,8 +137,6 @@ class CommandManager(private val plugin: MintPowers) {
 
                 1
             }
-
-
 
         return root
     }

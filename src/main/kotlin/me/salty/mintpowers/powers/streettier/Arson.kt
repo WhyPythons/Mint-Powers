@@ -6,9 +6,8 @@ import me.salty.mintpowers.powers.AbstractPower
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.BlockType
+import org.bukkit.damage.DamageType
 import org.bukkit.entity.LivingEntity
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 
 class Arson(plugin: MintPowers) : AbstractPower(plugin) {
 
@@ -32,28 +31,33 @@ class Arson(plugin: MintPowers) : AbstractPower(plugin) {
             },
 
             onPlayerDamageBlock = { event ->
+
                 val blockAbove = event.original.block.getRelative(BlockFace.UP)
 
                 if (blockAbove.type == Material.AIR) {
-                    blockAbove.type = Material.FIRE
+                    blockAbove.setType(Material.FIRE, false)
+                }
+
+            },
+
+            onDamageTaken = { event ->
+
+                if (event.original.damageSource.damageType == DamageType.IN_FIRE || event.original.damageSource.damageType == DamageType.ON_FIRE ) {
+                    event.original.isCancelled = true
                 }
 
             },
 
             onPlayerMove = { event ->
-                val player = event.original.player
 
-                val blockBelow = event.original.player.location.block.getRelative(BlockFace.DOWN).getRelative(BlockFace.UP)
+                val blockBelow = event.original.player.location.block
 
                 if (blockBelow == BlockType.AIR) {
                     blockBelow.type = Material.FIRE
                 }
 
-                if (!player.hasPotionEffect(PotionEffectType.FIRE_RESISTANCE)) {
-                    player.addPotionEffect(PotionEffect(PotionEffectType.FIRE_RESISTANCE, PotionEffect.INFINITE_DURATION, 0))
-                }
-
             }
+
         )
     }
 }

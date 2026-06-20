@@ -32,7 +32,7 @@ class BladeHero(plugin: MintPowers) : AbstractPower(plugin) {
                             }
                         }
                     }
-                }, null, 0, 10)
+                }, null, 1, 10)
             }
         )
     }

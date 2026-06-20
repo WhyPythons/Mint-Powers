@@ -1,10 +1,10 @@
 package me.salty.mintpowers.powers.godtier
 
 import me.salty.mintpowers.MintPowers
+import me.salty.mintpowers.PlayerInfo
 import me.salty.mintpowers.powers.PowerLogic
 import me.salty.mintpowers.powers.AbstractPower
 import me.salty.mintpowers.powers.Cooldown
-import me.salty.mintpowers.powers.PlayerInfo
 import me.salty.mintpowers.powers.PowerMetadata
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -128,7 +128,7 @@ class Judgement(plugin: MintPowers) : AbstractPower(plugin) {
 
                         markedPlayer.first.sendActionBar(Component.text("You have been judged and found wanting.", NamedTextColor.DARK_RED))
 
-                        judgementCooldown.start(player, metadata, plugin, Pair("Judgement has left cooldown.", NamedTextColor.GOLD))
+                        judgementCooldown.start(player, Pair("Judgement has left cooldown.", NamedTextColor.GOLD), plugin)
                     }
                     else {
                         markedPlayer.first.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, effectTime, 0))
@@ -141,7 +141,7 @@ class Judgement(plugin: MintPowers) : AbstractPower(plugin) {
 
                         markedPlayer.first.sendActionBar(Component.text("You have been judged and found satisfying.", NamedTextColor.DARK_RED))
 
-                        judgementCooldown.start(player, metadata, plugin, Pair("Judgement has left cooldown.", NamedTextColor.GOLD))
+                        judgementCooldown.start(player, Pair("Judgement has left cooldown.", NamedTextColor.GOLD), plugin)
                     }
 
                 }
