@@ -66,7 +66,6 @@ class TimeStop(plugin: MintPowers) : AbstractPower(plugin) {
                                 entity.teleport(frozenLocation)
                                 entity.isSneaking = false
                                 entity.velocity = Vector()
-                                entity.resetCooldown()
                             }
                         }
 

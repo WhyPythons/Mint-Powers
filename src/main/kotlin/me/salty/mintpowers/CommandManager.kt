@@ -14,11 +14,14 @@ import org.bukkit.entity.Player
 
 class CommandManager(private val plugin: MintPowers) {
 
+    private fun target(): RequiredArgumentBuilder<CommandSourceStack, PlayerSelectorArgumentResolver> {
+        return Commands.argument("target", ArgumentTypes.player())
+    }
     fun powerCommand(): LiteralArgumentBuilder<CommandSourceStack> {
 
-        val grantArgument = Commands.argument("target", ArgumentTypes.player()).then(createPowerArgumentNode("grant"))
-        val revokeArgument = Commands.argument("target", ArgumentTypes.player()).then(createPowerArgumentNode("revoke"))
-        val hasArgument = Commands.argument("target", ArgumentTypes.player()).then(createPowerArgumentNode("has"))
+        val grantArgument = target().then(createPowerArgumentNode("grant"))
+        val revokeArgument = target().then(createPowerArgumentNode("revoke"))
+        val hasArgument = target().then(createPowerArgumentNode("has"))
 
         val root = Commands.literal("power")
             .then(Commands.literal("grant")
@@ -34,15 +37,30 @@ class CommandManager(private val plugin: MintPowers) {
 
     fun groupCommand(): LiteralArgumentBuilder<CommandSourceStack> {
 
+        val inviteArgument = target().executes { context ->
+
+            val selector = context.getArgument("target", PlayerSelectorArgumentResolver::class.java)
+            val player = selector.resolve(context.source).firstOrNull() ?: return@executes 0
+
+            1
+        }
+
+        val disbandArgument = ""
+        val createArgument = ""
+
         val root = Commands.literal("group")
+            .then(Commands.literal("create"))
+            .then(Commands.literal("disband"))
+            .then(Commands.literal("invite")
+                .then(inviteArgument))
+
 
         return root
     }
 
     fun karmaCommand(): LiteralArgumentBuilder<CommandSourceStack> {
 
-        val payArgument = Commands.argument("target", ArgumentTypes.player())
-            .then(Commands.argument("amount_to_pay", IntegerArgumentType.integer()).executes { context ->
+        val payArgument = target().then(Commands.argument("amount_to_pay", IntegerArgumentType.integer()).executes { context ->
 
                 val selector = context.getArgument("target", PlayerSelectorArgumentResolver::class.java)
                 val amountToBePaid = context.getArgument("amount_to_pay", Int::class.java)
@@ -80,8 +98,7 @@ class CommandManager(private val plugin: MintPowers) {
             })
 
 
-        val setArgument = Commands.argument("target", ArgumentTypes.player())
-            .then(Commands.argument("set_to", IntegerArgumentType.integer())
+        val setArgument = target().then(Commands.argument("set_to", IntegerArgumentType.integer())
                 .executes { context ->
                 val player = context.getArgument("target", PlayerSelectorArgumentResolver::class.java).resolve(context.source).firstOrNull() ?: return@executes 0
 
@@ -95,7 +112,7 @@ class CommandManager(private val plugin: MintPowers) {
                 1
             })
 
-        val globalArgument = Commands.literal("global").executes { context ->
+        val globalCommand = Commands.literal("global").executes { context ->
             val onlinePlayers = plugin.server.onlinePlayers
 
             var totalKarma = 0
@@ -125,9 +142,8 @@ class CommandManager(private val plugin: MintPowers) {
             .then(Commands.literal("pay")
                 .then(payArgument))
             .then(Commands.literal("set")
-                .requires { sourceStack -> sourceStack.sender.hasPermission("mintpowers.admin") }
-                .then(setArgument))
-            .then(globalArgument)
+                .requires { sourceStack -> sourceStack.sender.hasPermission("mintpowers.admin") })
+            .then(globalCommand)
             .executes { context ->
                 val player = context.source.sender as Player
 

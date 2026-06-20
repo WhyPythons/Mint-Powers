@@ -73,6 +73,14 @@ class PlayerManager(private val plugin: MintPowers) : Listener {
         playerGroups.remove(groupId)
     }
 
+    fun addPlayerToGroup(groupId: String, playerUUID: UUID) {
+        playerGroups[groupId]?.teamMembers?.add(playerUUID.toString())
+    }
+
+    fun removePlayerFromGroup(groupId: String, playerUUID: UUID) {
+        playerGroups[groupId]?.teamMembers?.remove(playerUUID.toString())
+    }
+
     fun loadPlayerData(player: Player) {
         val container = player.persistentDataContainer
 

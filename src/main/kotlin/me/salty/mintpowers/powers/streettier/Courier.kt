@@ -11,7 +11,7 @@ class Courier(plugin: MintPowers) : AbstractPower(plugin) {
     override val description: String = "Delivery, any time, anywhere."
 
     override fun provideLogic(): PowerLogic {
-        TODO("Not yet implemented")
+        return PowerLogic()
     }
 
 }

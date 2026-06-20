@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
+import org.checkerframework.checker.units.qual.s
 
 @Serializable
 data class PlayerInfo (
@@ -11,6 +12,7 @@ data class PlayerInfo (
     var karma: Int = 0,
     var team: KarmaTeam = KarmaTeam.CIVILIAN,
     var group: String = "" ,
+    var bounty: Bounty = Bounty(),
     var isKnockedOut: Boolean = false,
     val powers: HashSet<String> = hashSetOf()
 ) {
@@ -45,6 +47,11 @@ data class PlayerInfo (
 }
 
 @Serializable
+data class Bounty (
+    val order: BountyOrder = BountyOrder.NONE,
+    val karmaReward: Int = 0
+)
+
 data class Group (
     val id: String = "",
     val name: String = "",
@@ -54,8 +61,13 @@ data class Group (
     val waypoints: HashSet<SerializableVector> = hashSetOf(),
 )
 
-@Serializable
 data class SerializableVector(val x: Double = 0.0, val y: Double = 0.0, val z: Double = 0.0)
+
+enum class BountyOrder {
+    NONE,
+    CAPTURE,
+    KILL
+}
 
 enum class KarmaTeam {
     CIVILIAN,

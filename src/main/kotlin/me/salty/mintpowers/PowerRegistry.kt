@@ -9,6 +9,7 @@ import me.salty.mintpowers.powers.lowtier.CursedImmortality
 import me.salty.mintpowers.powers.lowtier.WindChaser
 import me.salty.mintpowers.powers.streettier.Arson
 import me.salty.mintpowers.powers.streettier.CatNature
+import me.salty.mintpowers.powers.streettier.Courier
 
 class PowerRegistry(plugin: MintPowers) {
 
@@ -27,6 +28,7 @@ class PowerRegistry(plugin: MintPowers) {
 
         register(CatNature(plugin).build())
         register(Arson(plugin).build())
+        //register(Courier(plugin).build())
 
     }
 

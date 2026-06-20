@@ -1,7 +1,6 @@
 package me.salty.mintpowers
 
 import io.papermc.paper.ban.BanListType
-import me.salty.mintpowers.powers.KarmaTeam
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit

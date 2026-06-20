@@ -49,15 +49,15 @@ class KarmaManager(private val plugin: MintPowers): Listener {
 
     @EventHandler
     fun onPlayerDropItem(event: PlayerDropItemEvent) {
-        if (event.player.isSneaking) {
-            event.itemDrop.itemStack.editMeta { meta ->
-                meta.persistentDataContainer.set(itemOwnerKey, PersistentDataType.STRING, UUID.randomUUID().toString())
+        val item = event.itemDrop.itemStack
 
-                val itemLore = listOf(Component.text("", NamedTextColor.GOLD))
-
-                meta.lore(itemLore)
+        if (event.player.isSneaking && !item.persistentDataContainer.has(stolenItemKey, PersistentDataType.STRING)) {
+            item.editMeta { meta ->
+                meta.persistentDataContainer.remove(itemOwnerKey)
+                meta.lore(null)
             }
         }
+
     }
 
     @EventHandler
@@ -129,7 +129,7 @@ class KarmaManager(private val plugin: MintPowers): Listener {
 
             if (isItemStolen == true && player.uniqueId == ownerUUID) {
                 item.editMeta { meta ->
-                    meta.persistentDataContainer.set(stolenItemKey, PersistentDataType.BOOLEAN, false)
+                    meta.persistentDataContainer.remove(stolenItemKey)
 
                     val removeStolenLore = (meta.lore())?.minus(Component.text("Stolen", NamedTextColor.RED))
 
