@@ -31,6 +31,7 @@ class MintPowers : JavaPlugin() {
 
            registrar.register(commandManager.karmaCommand().build())
            registrar.register(commandManager.powerCommand().build())
+           registrar.register(commandManager.groupCommand().build())
 
        }
     }

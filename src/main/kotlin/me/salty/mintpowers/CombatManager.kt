@@ -21,18 +21,18 @@ class CombatManager(private val plugin: MintPowers): Listener {
         val victim = event.entity as? Player ?: return
         val damager = event.damageSource.causingEntity as? Player ?: return
 
-        val victimInfo = plugin.playerManager.getPlayerInfo(victim.uniqueId)
-        val damagerInfo = plugin.playerManager.getPlayerInfo(damager.uniqueId)
+        val victimInfo = plugin.playerManager.getPlayerInfo(victim.uniqueId) ?: return
+        val damagerInfo = plugin.playerManager.getPlayerInfo(damager.uniqueId) ?: return
 
         val damagerKarmaLoss = event.damage.toInt()
 
-        if (victimInfo?.team != KarmaTeam.VILLAIN) {
-            damagerInfo?.changeKarma(damager, -damagerKarmaLoss)
+        if (victimInfo.team != KarmaTeam.VILLAIN) {
+            damagerInfo.changeKarma(damager, -damagerKarmaLoss)
 
             damager.sendActionBar(Component.text("You have assaulted an innocent player. -$damagerKarmaLoss karma.", NamedTextColor.RED))
         }
 
-        if (victimInfo?.isKnockedOut == false) {
+        if (!victimInfo.isKnockedOut) {
 
             if (event.finalDamage >= victim.health) {
 
@@ -55,6 +55,38 @@ class CombatManager(private val plugin: MintPowers): Listener {
                 damager.sendActionBar(Component.text("You have knocked out ${victim.name}!", NamedTextColor.RED))
             }
         }
+
+        if (victimInfo.team == KarmaTeam.VILLAIN && damagerInfo.team == KarmaTeam.HERO && victimInfo.isKnockedOut) {
+
+            val killerKarmaGain = victimInfo.bounty.karmaReward + victimInfo.karma / 4
+
+            damagerInfo.changeKarma(damager, killerKarmaGain)
+
+            damager.sendMessage("You have successfully neutralized a villain! You have been awarded $killerKarmaGain!")
+
+            val banList = Bukkit.getServer().getBanList(BanListType.PROFILE)
+
+            val profile = victim.playerProfile
+
+            if (victimInfo.bounty.order == BountyOrder.CAPTURE) {
+                event.isCancelled = true
+
+                val banDuration = Duration.ofHours(1)
+
+                banList.addBan(profile, "You have been captured. Come back in an hour.", banDuration, "Server")
+
+                victim.kick(Component.text("You have been captured and are currently being relocated. Standby."))
+            }
+
+            else if (victimInfo.bounty.order == BountyOrder.KILL) {
+                val banDuration = Duration.ofHours(2)
+
+                banList.addBan(profile, "Your villainous deeds have caught up to you. Sit and reflect for a few hours.", banDuration, "Server")
+
+                victim.kick(Component.text("You have been killed."))
+            }
+        }
+
     }
 
     @EventHandler

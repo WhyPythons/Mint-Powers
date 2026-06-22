@@ -11,12 +11,20 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
+import kotlin.math.absoluteValue
 
 class CommandManager(private val plugin: MintPowers) {
 
-    private fun target(): RequiredArgumentBuilder<CommandSourceStack, PlayerSelectorArgumentResolver> {
+    private fun target(type: String = "single"): RequiredArgumentBuilder<CommandSourceStack, PlayerSelectorArgumentResolver> {
+        if (type == "multiple") {
+            return Commands.argument("target", ArgumentTypes.players())
+        }
+        else if (type == "single") {
+            return Commands.argument("target", ArgumentTypes.player())
+        }
         return Commands.argument("target", ArgumentTypes.player())
     }
+
     fun powerCommand(): LiteralArgumentBuilder<CommandSourceStack> {
 
         val grantArgument = target().then(createPowerArgumentNode("grant"))
@@ -54,7 +62,6 @@ class CommandManager(private val plugin: MintPowers) {
             .then(Commands.literal("invite")
                 .then(inviteArgument))
 
-
         return root
     }
 
@@ -66,7 +73,7 @@ class CommandManager(private val plugin: MintPowers) {
                 val amountToBePaid = context.getArgument("amount_to_pay", Int::class.java)
 
                 val player = selector.resolve(context.source).firstOrNull() ?: return@executes 0
-                val sender = context.source.sender as Player
+                val sender = context.source.sender as? Player ?: return@executes 0
 
                 val playerInfo = plugin.playerManager.getPlayerInfo(player.uniqueId)
                 val senderInfo = plugin.playerManager.getPlayerInfo(sender.uniqueId)
@@ -87,30 +94,38 @@ class CommandManager(private val plugin: MintPowers) {
                             }
                         }
                         else {
-                            sender.sendMessage(Component.text("You cannot give negative karma.", NamedTextColor.RED))
+                            sender.sendMessage(Component.text("You must give a positive amount of karma.", NamedTextColor.RED))
                         }
                     }
                     else {
                         sender.sendMessage(Component.text("You do not have enough karma.", NamedTextColor.RED))
                     }
                 }
-                1
+            1
             })
 
 
-        val setArgument = target().then(Commands.argument("set_to", IntegerArgumentType.integer())
+        val setArgument = target("multiple").then(Commands.argument("set_to", IntegerArgumentType.integer())
                 .executes { context ->
-                val player = context.getArgument("target", PlayerSelectorArgumentResolver::class.java).resolve(context.source).firstOrNull() ?: return@executes 0
+                    val selector = context.getArgument("target", PlayerSelectorArgumentResolver::class.java)
 
-                val playerInfo = plugin.playerManager.getPlayerInfo(player.uniqueId)
+                    val players = selector.resolve(context.source)
 
-                val setAmount = IntegerArgumentType.getInteger(context, "set_to")
+                    val setAmount = IntegerArgumentType.getInteger(context, "set_to")
 
-                playerInfo?.updateKarma(player, setAmount)
-                player.sendMessage(Component.text("You have set your karma to: $setAmount", NamedTextColor.GREEN))
+                    for (player in players) {
+                        val playerInfo = plugin.playerManager.getPlayerInfo(player.uniqueId)
 
-                1
-            })
+                        playerInfo?.updateKarma(player, setAmount)
+
+                        if (context.source.sender != player) {
+                            context.source.sender.sendMessage(Component.text("You have set ${player.name}'s karma to ${setAmount}!", NamedTextColor.GREEN))
+                        }
+
+                        player.sendMessage(Component.text("Your karma has been set to: $setAmount", NamedTextColor.GREEN))
+                    }
+                    1
+                })
 
         val globalCommand = Commands.literal("global").executes { context ->
             val onlinePlayers = plugin.server.onlinePlayers
@@ -136,12 +151,25 @@ class CommandManager(private val plugin: MintPowers) {
             1
         }
 
-        val bountyArgument = Commands.literal("bounty")
+        val bountyCommand = Commands.literal("bounties").executes { context ->
+            for (player in plugin.server.onlinePlayers) {
+
+                val playerInfo = plugin.playerManager.getPlayerInfo(player.uniqueId) ?: return@executes 0
+
+                if (playerInfo.bounty.order != BountyOrder.NONE) {
+                    context.source.sender.sendMessage(Component.text("${player.name}: ${playerInfo.bounty.order.name} - Reward: +${playerInfo.bounty.karmaReward.absoluteValue}"))
+                }
+
+            }
+            1
+        }
 
         val root = Commands.literal("karma")
+            .then(bountyCommand)
             .then(Commands.literal("pay")
                 .then(payArgument))
             .then(Commands.literal("set")
+                .then(setArgument)
                 .requires { sourceStack -> sourceStack.sender.hasPermission("mintpowers.admin") })
             .then(globalCommand)
             .executes { context ->
@@ -188,7 +216,7 @@ class CommandManager(private val plugin: MintPowers) {
                 else if (type == "revoke") {
                     plugin.playerManager.revokePower(player.uniqueId, power.id)
                     player.sendMessage("${power.name} has been revoked.")
-                    context.source.sender.sendMessage("You have revoked all of ${player.name}'s powers.")
+                    context.source.sender.sendMessage("You have revoked ${player.name}'s power.")
                 }
                 else if (type == "has") {
                     if (plugin.playerManager.hasPower(player.uniqueId, power.id)) {

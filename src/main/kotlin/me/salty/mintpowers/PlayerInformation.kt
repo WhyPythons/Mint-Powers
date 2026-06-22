@@ -32,14 +32,24 @@ data class PlayerInfo (
 
         if (karma >= 100) {
             this.team = KarmaTeam.HERO
+            this.bounty = Bounty()
             messageColor = NamedTextColor.GOLD
         }
         else if (karma <= -100) {
             this.team = KarmaTeam.VILLAIN
+
+            if (karma <= -1000) {
+                this.bounty = Bounty(BountyOrder.KILL, this.karma)
+            }
+            else {
+                this.bounty = Bounty(BountyOrder.CAPTURE, this.karma / 2)
+            }
+
             messageColor = NamedTextColor.RED
         }
         else {
             this.team = KarmaTeam.CIVILIAN
+            this.bounty = Bounty()
         }
 
         player.sendActionBar(Component.text("Your karma has changed. You are a $team.", messageColor))
